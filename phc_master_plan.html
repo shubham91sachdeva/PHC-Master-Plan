@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progressive Health Club — Master Implementation Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root {
+    --navy:#0F2D5E; --teal:#0A7C6E; --gold:#C9951A; --rose:#B03060;
+    --sage:#2E6E45; --purple:#5B2D8E; --orange:#C45A1A;
+    --white:#fff; --light:#F7F9FC; --lgray:#E8EDF5;
+    --gray:#6B7280; --dgray:#374151; --border:#D1D5DB; --ink:#0D1117;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Inter',sans-serif;background:var(--light);color:var(--ink);}
+
+  /* SIDEBAR */
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:270px;background:var(--navy);overflow-y:auto;z-index:50;padding:20px 0;}
+  .sb-logo{padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .sb-logo h1{color:#fff;font-size:13px;font-weight:800;letter-spacing:1px;line-height:1.4;}
+  .sb-logo p{color:rgba(255,255,255,0.45);font-size:10px;margin-top:3px;}
+  .sb-logo .vtag{display:inline-block;background:var(--gold);color:#fff;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;margin-top:6px;}
+  .ns{padding:6px 20px 2px;}
+  .ns-label{color:rgba(255,255,255,0.28);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;}
+  .ni{display:block;padding:7px 14px;border-radius:7px;margin:1px 6px;color:rgba(255,255,255,0.68);text-decoration:none;font-size:12px;transition:all .2s;}
+  .ni:hover{background:rgba(255,255,255,0.1);color:#fff;}
+  .ni .n{display:inline-block;width:18px;height:18px;background:rgba(255,255,255,0.1);border-radius:3px;text-align:center;line-height:18px;font-size:9px;font-weight:700;margin-right:7px;}
+
+  /* MAIN */
+  .main{margin-left:270px;padding:44px;max-width:1080px;}
+
+  /* HERO */
+  .doc-hero{background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:18px;padding:44px;margin-bottom:56px;color:#fff;}
+  .doc-hero .vtag{background:rgba(255,255,255,0.15);display:inline-block;padding:3px 12px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:14px;}
+  .doc-hero h1{font-size:32px;font-weight:800;line-height:1.2;margin-bottom:10px;}
+  .doc-hero p{color:rgba(255,255,255,0.78);font-size:15px;line-height:1.7;max-width:680px;}
+  .doc-hero .meta{display:flex;gap:28px;margin-top:28px;flex-wrap:wrap;}
+  .doc-hero .mi .ml{font-size:10px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+  .doc-hero .mi .mv{font-size:14px;color:#fff;font-weight:600;margin-top:2px;}
+
+  /* SECTION */
+  .ds{padding:56px 0;border-bottom:1px solid var(--border);}
+  .ds:last-child{border-bottom:none;}
+  .ey{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;}
+  h2{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3;}
+  h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+  h4{font-size:15px;font-weight:700;color:var(--dgray);margin-bottom:6px;}
+  p{font-size:14px;line-height:1.8;color:var(--dgray);}
+  .sdesc{font-size:15px;color:var(--gray);margin-top:10px;max-width:680px;line-height:1.7;}
+
+  /* CARDS */
+  .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:20px 0;}
+  .cg3{grid-template-columns:repeat(3,1fr);}
+  .cg4{grid-template-columns:repeat(4,1fr);}
+  .card{background:#fff;border-radius:12px;padding:22px;border:1px solid var(--border);transition:box-shadow .2s;}
+  .card:hover{box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+  .card .ci{font-size:26px;margin-bottom:10px;}
+  .card h4{color:var(--navy);margin-bottom:6px;}
+  .card p{font-size:13px;color:var(--gray);line-height:1.6;}
+  .ctags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+  .tag{background:var(--lgray);color:var(--dgray);padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600;}
+  .tag.g{background:#D1FAE5;color:#065F46;}
+  .tag.b{background:#DBEAFE;color:#1E40AF;}
+  .tag.gold{background:#FEF3C7;color:#92400E;}
+  .tag.r{background:#FCE7F3;color:#9D174D;}
+  .tag.p{background:#EDE9FE;color:#5B21B6;}
+
+  /* TABLE */
+  .tw{overflow-x:auto;margin:18px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.4px;}
+  td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--dgray);vertical-align:top;line-height:1.6;}
+  tr:nth-child(even) td{background:var(--light);}
+  tr:hover td{background:#EEF2FF;}
+
+  /* CALLOUTS */
+  .co{border-radius:11px;padding:18px 22px;margin:16px 0;display:flex;gap:14px;align-items:flex-start;}
+  .co-icon{font-size:20px;flex-shrink:0;}
+  .co h5{font-size:13px;font-weight:700;margin-bottom:5px;}
+  .co p{font-size:13px;line-height:1.6;}
+  .co.info{background:#EFF6FF;border-left:4px solid #3B82F6;}
+  .co.info h5{color:#1E40AF;}
+  .co.ok{background:#F0FDF4;border-left:4px solid var(--sage);}
+  .co.ok h5{color:var(--sage);}
+  .co.warn{background:#FFFBEB;border-left:4px solid var(--gold);}
+  .co.warn h5{color:#92400E;}
+  .co.flag{background:#FFF1F2;border-left:4px solid var(--rose);}
+  .co.flag h5{color:var(--rose);}
+
+  /* Q&A */
+  .qa{margin:24px 0;}
+  .q{background:var(--navy);color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font-weight:700;font-size:14px;display:flex;gap:10px;align-items:flex-start;}
+  .a{background:#fff;padding:20px 18px;border-radius:0 0 10px 10px;border:1px solid var(--border);border-top:none;}
+  .a p{margin-bottom:10px;font-size:14px;}
+  .a p:last-child{margin-bottom:0;}
+  .a ul,.a ol{padding-left:18px;margin:10px 0;}
+  .a li{font-size:13px;color:var(--dgray);line-height:1.7;margin-bottom:5px;}
+  .a .nt{font-weight:700;color:var(--navy);font-size:13px;margin:14px 0 6px;}
+
+  /* ACCORDION */
+  details{margin:10px 0;}
+  details summary{cursor:pointer;padding:13px 16px;background:#fff;border:1px solid var(--border);border-radius:9px;font-weight:600;font-size:13px;color:var(--navy);list-style:none;display:flex;justify-content:space-between;align-items:center;transition:all .2s;}
+  details summary:hover{background:var(--light);}
+  details[open] summary{border-radius:9px 9px 0 0;border-bottom:none;background:var(--navy);color:#fff;}
+  details summary::after{content:'▼';font-size:9px;color:var(--gray);}
+  details[open] summary::after{transform:rotate(180deg);color:rgba(255,255,255,.5);}
+  details .db{background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 9px 9px;padding:18px 16px;font-size:13px;color:var(--dgray);line-height:1.7;}
+  details .db ul{padding-left:16px;margin:8px 0;}
+  details .db li{margin-bottom:5px;}
+  details .db strong{color:var(--navy);}
+
+  /* CURRICULUM MONTH CARDS */
+  .month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:20px 0;}
+  .month-card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+  .month-header{padding:14px 18px;display:flex;gap:12px;align-items:center;}
+  .month-num{width:42px;height:42px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+  .month-header h4{color:#fff;margin-bottom:2px;font-size:14px;}
+  .month-header span{color:rgba(255,255,255,.7);font-size:11px;}
+  .month-body{padding:14px 18px;}
+  .month-body ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .month-body ul li{font-size:12px;color:#444;padding-left:16px;position:relative;line-height:1.5;}
+  .month-body ul li::before{content:'→';position:absolute;left:0;color:var(--teal);font-weight:700;}
+  .month-footer{padding:10px 18px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;}
+
+  /* month header colours */
+  .mc-1 .month-header{background:var(--navy);}
+  .mc-2 .month-header{background:var(--teal);}
+  .mc-3 .month-header{background:var(--sage);}
+  .mc-4 .month-header{background:var(--rose);}
+  .mc-5 .month-header{background:var(--purple);}
+  .mc-6 .month-header{background:var(--gold);}
+  .mc-7 .month-header{background:#1a5276;}
+  .mc-8 .month-header{background:#6E3A2E;}
+  .mc-9 .month-header{background:var(--orange);}
+  .mc-10 .month-header{background:#2E4053;}
+
+  /* STEP FLOW */
+  .sf{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+  .sfi{display:flex;gap:14px;align-items:flex-start;}
+  .sfl{display:flex;flex-direction:column;align-items:center;width:38px;flex-shrink:0;}
+  .sfd{width:38px;height:38px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;}
+  .sfline{width:2px;flex-grow:1;background:var(--lgray);min-height:20px;}
+  .sfc{padding:6px 0 24px;}
+  .sfc h4{color:var(--navy);margin-bottom:3px;font-size:14px;}
+  .sfc p{font-size:13px;color:var(--gray);}
+
+  /* MILESTONE TIMELINE */
+  .tg{display:grid;grid-template-columns:100px 1fr;gap:0;margin:18px 0;}
+  .tr{display:contents;}
+  .tr .tl{padding:10px 14px 10px 0;text-align:right;font-weight:700;font-size:11px;color:var(--teal);border-right:2px solid var(--teal);}
+  .tr .tc{padding:10px 0 10px 18px;}
+  .tr .tc strong{font-size:13px;color:var(--navy);display:block;}
+  .tr .tc p{font-size:12px;color:var(--gray);margin-top:3px;}
+
+  /* PARTNERSHIP CARD */
+  .pc{background:#fff;border-radius:12px;padding:18px 22px;border:1px solid var(--border);margin-bottom:14px;}
+  .pc-head{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+  .pc-icon{font-size:26px;}
+  .pc-title{font-size:15px;font-weight:700;color:var(--navy);}
+  .pc-sub{font-size:11px;color:var(--gray);}
+  .pc-body{font-size:13px;color:var(--dgray);line-height:1.7;}
+  .pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;font-size:12px;}
+  .pc-kv .k{color:var(--gray);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;}
+  .pc-kv .v{color:var(--navy);font-weight:600;margin-top:1px;}
+
+  /* BIZ FLOW */
+  .bflow{display:flex;align-items:center;gap:0;overflow-x:auto;padding:20px 0;}
+  .bnode{background:#fff;border:2px solid var(--navy);border-radius:10px;padding:14px 18px;min-width:140px;text-align:center;flex-shrink:0;}
+  .bnode .bi{font-size:24px;margin-bottom:6px;}
+  .bnode h4{font-size:12px;font-weight:700;color:var(--navy);}
+  .bnode p{font-size:10px;color:var(--gray);margin-top:3px;}
+  .barr{font-size:20px;color:var(--navy);padding:0 10px;flex-shrink:0;font-weight:700;}
+
+  @media(max-width:900px){
+    .sidebar{display:none;}
+    .main{margin-left:0;padding:20px;}
+    .cg,.cg3,.cg4{grid-template-columns:1fr;}
+    .month-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <h1>PROGRESSIVE HEALTH CLUB</h1>
+    <p>by Sakshi Malik — Master Plan</p>
+    <span class="vtag">INTERNAL · v1.0 · July 2026</span>
+  </div>
+
+  <div class="ns"><div class="ns-label">Overview</div>
+    <a href="#vision" class="ni"><span class="n">1</span>Vision & Identity</a>
+    <a href="#structure" class="ni"><span class="n">2</span>Programme Structure</a>
+    <a href="#milestones" class="ni"><span class="n">3</span>Implementation Milestones</a>
+  </div>
+
+  <div class="ns"><div class="ns-label">Curriculum</div>
+    <a href="#basic" class="ni"><span class="n">4</span>Level Basic — Class 5–8</a>
+    <a href="#advanced" class="ni"><span class="n">5</span>Level Advanced — Class 9–12</a>
+    <a href="#topics" class="ni"><span class="n">6</span>All Topics Deep Dive</a>
+  </div>
+
+  <div class="ns"><div class="ns-label">Delivery</div>
+    <a href="#formats" class="ni"><span class="n">7</span>Delivery Formats</a>
+    <a href="#book" class="ni"><span class="n">8</span>Published Book / Workbook</a>
+    <a href="#teachers" class="ni"><span class="n">9</span>Teacher Training</a>
+    <a href="#parents" class="ni"><span class="n">10</span>Parent Sessions</a>
+  </div>
+
+  <div class="ns"><div class="ns-label">Partnerships</div>
+    <a href="#experts" class="ni"><span class="n">11</span>Expert Roster</a>
+    <a href="#partnerships" class="ni"><span class="n">12</span>Institutional Tie-ups</a>
+    <a href="#ops" class="ni"><span class="n">13</span>Operations Setup</a>
+  </div>
+
+  <div class="ns"><div class="ns-label">Business</div>
+    <a href="#bizmodel" class="ni"><span class="n">14</span>Business Model</a>
+    <a href="#tech" class="ni"><span class="n">15</span>Technology Layer</a>
+    <a href="#openitems" class="ni"><span class="n">16</span>Open Items</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="doc-hero">
+    <span class="vtag">MASTER IMPLEMENTATION DOCUMENT — CONFIDENTIAL</span>
+    <h1>Progressive Health Club by Sakshi Malik</h1>
+    <p>The complete ground-level implementation plan — curriculum, delivery formats, partnerships, teacher training, parent engagement, institutional tie-ups, and phased rollout. This document is the single source of truth for everything that needs to happen to bring PHC to life at scale in Indian schools.</p>
+    <div class="meta">
+      <div class="mi"><span class="ml">Programme</span><span class="mv">Progressive Health Club (PHC)</span></div>
+      <div class="mi"><span class="ml">Ambassador</span><span class="mv">Sakshi Malik, Olympian</span></div>
+      <div class="mi"><span class="ml">Website</span><span class="mv">phcsakshimalik.com</span></div>
+      <div class="mi"><span class="ml">Status</span><span class="mv">Implementation Phase</span></div>
+    </div>
+  </div>
+
+  <!-- ===== 1. VISION ===== -->
+  <section class="ds" id="vision">
+    <p class="ey">Section 1</p>
+    <h2>Vision, Identity & Core Belief</h2>
+    <p class="sdesc">What PHC stands for, what it is trying to change, and why it matters right now.</p>
+
+    <div class="cg">
+      <div class="card" style="border-left:4px solid var(--teal);">
+        <div class="ci">🎯</div><h4>Mission</h4>
+        <p>To make health education as foundational as academic education in every Indian school — giving every child the knowledge to understand their body, mind, and emotions from an early age.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--gold);">
+        <div class="ci">🔭</div><h4>Vision</h4>
+        <p>A generation of Indian children who graduate knowing how to eat, move, rest, think, relate, and manage their wellbeing — for life. India's first truly comprehensive school health literacy programme.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--rose);">
+        <div class="ci">🇮🇳</div><h4>The Problem</h4>
+        <p>India is the obesity capital of the world. Children are glued to screens. Puberty is undiscussed. Mental health is stigmatised. Financial literacy is absent. Schools teach children everything except how to live healthy.</p>
+      </div>
+      <div class="card" style="border-left:4px solid var(--navy);">
+        <div class="ci">💡</div><h4>The Opportunity</h4>
+        <p>CBSE mandates school health programmes but schools lack the curriculum, experts, and structure. PHC delivers the complete package — curriculum, experts, books, training, and events — in one annual partnership.</p>
+      </div>
+    </div>
+
+    <div class="co ok">
+      <span class="co-icon">🏅</span>
+      <div><h5>Sakshi Malik — Why She Anchors This</h5>
+      <p>Sakshi started her health journey at age 12 as a school student in Rohtak. Her story is not about becoming an Olympian — it is about what happened when a child took her physical and mental health seriously during her school years. That is the message PHC carries to every child: <em>health awareness in school shapes your entire life.</em></p></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. STRUCTURE ===== -->
+  <section class="ds" id="structure">
+    <p class="ey">Section 2</p>
+    <h2>Programme Structure Overview</h2>
+    <p class="sdesc">Three levels, two published tracks, multiple delivery formats, one consistent annual experience.</p>
+
+    <div class="tw"><table>
+      <tr><th>Level</th><th>Classes</th><th>Age</th><th>Curriculum Focus</th><th>Key Differentiator</th></tr>
+      <tr><td><strong>Foundation</strong></td><td>Class 1–4</td><td>6–10 yrs</td><td>Play-based hygiene, basic nutrition, body awareness, friendship skills</td><td>Integrated into daily school routine — no separate class needed</td></tr>
+      <tr><td><strong>Basic</strong></td><td>Class 5–8</td><td>10–14 yrs</td><td>Nutrition science, puberty, fitness, emotional health, social media, moral values</td><td>Dedicated PHC period — 1 session/week + monthly expert visit</td></tr>
+      <tr><td><strong>Advanced</strong></td><td>Class 9–12</td><td>14–18 yrs</td><td>Mental health deep, sexual health, financial literacy, relationships, career wellness</td><td>Monthly expert sessions + peer-led discussions + certification track</td></tr>
+    </table></div>
+
+    <div class="co info">
+      <span class="co-icon">📋</span>
+      <div><h5>Annual School Year Calendar (India)</h5>
+      <p>Indian school year runs April–March. PHC programme year: <strong>July → April</strong> (10 active months). June = school onboarding, teacher training, book distribution. April = year-end assessments, certifications, Activity Day.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 3. MILESTONES ===== -->
+  <section class="ds" id="milestones">
+    <p class="ey">Section 3</p>
+    <h2>Implementation Milestones</h2>
+    <p class="sdesc">Phase-by-phase rollout from curriculum finalisation to national scale.</p>
+
+    <div class="sf">
+      <div class="sfi"><div class="sfl"><div class="sfd">1</div><div class="sfline"></div></div>
+        <div class="sfc"><h4>Phase 1 — Foundation (Month 1–2: July–Aug 2026)</h4>
+        <p>Finalise curriculum for both levels. Publish Student Workbooks (Basic + Advanced). Produce Teacher Guide. Record Sakshi Malik video content (6 sessions, 3–4 min each). Build expert network per city. Sign 5–10 pilot schools. Complete teacher training for pilot cohort via Zoom.</p>
+        <div class="ctags" style="margin-top:8px;"><span class="tag b">Curriculum Lock</span><span class="tag g">Book Print</span><span class="tag gold">Sakshi Videos</span><span class="tag p">Pilot Schools</span></div></div>
+      </div>
+      <div class="sfi"><div class="sfl"><div class="sfd">2</div><div class="sfline"></div></div>
+        <div class="sfc"><h4>Phase 2 — Pilot Launch (Month 3–4: Sep–Oct 2026)</h4>
+        <p>Grand launch event at 1–2 pilot schools with Sakshi Malik presence. Books distributed to all students. Weekly PHC sessions begin. First expert visits (nutritionist + psychologist) to pilot schools. First Parent Session held. App/digital tracker launched for pilot cohort. COA award moment activated — participating principals recognised.</p>
+        <div class="ctags" style="margin-top:8px;"><span class="tag b">Launch Event</span><span class="tag g">Sessions Live</span><span class="tag r">Parent Session 1</span></div></div>
+      </div>
+      <div class="sfi"><div class="sfl"><div class="sfd">3</div><div class="sfline"></div></div>
+        <div class="sfc"><h4>Phase 3 — Pilot Evaluation (Month 5–6: Nov–Dec 2026)</h4>
+        <p>Mid-year health report cards issued. Teacher feedback collected. Student engagement data reviewed. Curriculum adjustments made. Second parent session. First school health leader (student) elections held. Gather 3–5 video testimonials from principals, parents, students for scale pitch.</p>
+        <div class="ctags" style="margin-top:8px;"><span class="tag gold">Report Cards</span><span class="tag b">Feedback Loop</span><span class="tag g">Testimonials</span></div></div>
+      </div>
+      <div class="sfi"><div class="sfl"><div class="sfd">4</div><div class="sfline"></div></div>
+        <div class="sfc"><h4>Phase 4 — Year 1 Completion (Month 7–10: Jan–Apr 2027)</h4>
+        <p>Second semester full delivery. Annual Activity & Health Day at each school. Year-end certifications awarded (signed by Sakshi Malik). Final Health Report Cards. 50+ school target for Year 2 — sales pitch using pilot proof. Year 2 contracts signed before April.</p>
+        <div class="ctags" style="margin-top:8px;"><span class="tag g">Activity Day</span><span class="tag b">Certifications</span><span class="tag gold">Year 2 Sales</span></div></div>
+      </div>
+      <div class="sfi"><div class="sfl"><div class="sfd">5</div></div>
+        <div class="sfc"><h4>Phase 5 — Scale (Year 2: 2027–28)</h4>
+        <p>50+ schools across 3–4 cities. City coordinators hired. Expert retainer agreements formalised. Foundation level (Class 1–4) curriculum added. Book reprint with updated content. National media coverage leveraged via Sakshi Malik's profile. Partnership with CBSE for formal recognition of PHC curriculum.</p>
+        <div class="ctags" style="margin-top:8px;"><span class="tag p">50+ Schools</span><span class="tag b">City Teams</span><span class="tag g">CBSE Recognition</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. LEVEL BASIC CURRICULUM ===== -->
+  <section class="ds" id="basic">
+    <p class="ey">Section 4</p>
+    <h2>Level Basic Curriculum — Class 5 to 8</h2>
+    <p class="sdesc">Ages 10–14. Foundational health literacy. One 40-min PHC session per week. One expert visit per month. 10 months, ~40 sessions + events.</p>
+
+    <div class="co ok">
+      <span class="co-icon">🌱</span>
+      <div><h5>Design Philosophy — Basic Level</h5>
+      <p>This age group is going through puberty, navigating peer pressure, becoming addicted to screens, and forming habits that will last decades. The curriculum is awareness-first — not prescriptive. Every topic is framed as "here is what is happening in your body/mind — here is what it means — here is what you can do about it." No judgment. High curiosity. Story-led where possible.</p></div>
+    </div>
+
+    <div class="month-grid">
+      <div class="month-card mc-1">
+        <div class="month-header"><div class="month-num">JUL</div><div><h4>Month 1 — What Is Health?</h4><span>Launch Month · Awareness Foundation</span></div></div>
+        <div class="month-body"><ul>
+          <li>What does "being healthy" actually mean? Beyond not being sick.</li>
+          <li>Six dimensions of health: physical, mental, emotional, social, spiritual, financial</li>
+          <li>Introduction to PHC — Sakshi Malik's school story (video)</li>
+          <li>My Health Baseline: self-assessment worksheet</li>
+          <li>What is BMI? How to measure it. What it tells us (and doesn't).</li>
+          <li>Introduction to the Health Report Card — what gets tracked and why</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Paediatrician</span><span class="tag g">Activity: BMI Check</span></div>
+      </div>
+
+      <div class="month-card mc-2">
+        <div class="month-header"><div class="month-num">AUG</div><div><h4>Month 2 — Nutrition Science</h4><span>Food as Information · Macronutrients</span></div></div>
+        <div class="month-body"><ul>
+          <li>What are macronutrients? Proteins, Carbohydrates, Fats — roles and sources</li>
+          <li>Why protein matters most during growth years (10–14)</li>
+          <li>Introduction to Protein Meter — daily food awareness tracker</li>
+          <li>Reading nutrition labels — practise on real food packets</li>
+          <li>Good carbs vs bad carbs — whole grains, refined sugar</li>
+          <li>Hydration: How much water do I actually need?</li>
+          <li>Common Indian food myths debunked (ghee is bad, dal is enough, etc.)</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Nutritionist</span><span class="tag g">Activity: Label Reading</span><span class="tag gold">Protein Meter Starts</span></div>
+      </div>
+
+      <div class="month-card mc-3">
+        <div class="month-header"><div class="month-num">SEP</div><div><h4>Month 3 — Micronutrients & Gut Health</h4><span>Vitamins · Minerals · Digestion</span></div></div>
+        <div class="month-body"><ul>
+          <li>Vitamins: A, B-complex, C, D — what each does, where to get it</li>
+          <li>Iron deficiency and anaemia — why Indian girls especially need to know this</li>
+          <li>Calcium for growing bones — dairy vs plant sources</li>
+          <li>The gut microbiome — why your stomach is your second brain</li>
+          <li>Processed food, junk food — what it does to your gut</li>
+          <li>Meal timing and the importance of breakfast</li>
+          <li>Workshop: Design your ideal day of eating</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Nutritionist</span><span class="tag g">Activity: Meal Design</span></div>
+      </div>
+
+      <div class="month-card mc-4">
+        <div class="month-header"><div class="month-num">OCT</div><div><h4>Month 4 — Physical Fitness</h4><span>Movement · Exercise · Sport</span></div></div>
+        <div class="month-body"><ul>
+          <li>Why the body needs movement — cardiovascular health basics</li>
+          <li>Types of exercise: aerobic, strength, flexibility, balance</li>
+          <li>Fitness assessment: how to measure your baseline fitness level</li>
+          <li>Designing a simple home workout — no equipment needed</li>
+          <li>Sports as health: why sport is not just about winning</li>
+          <li>Warming up and cooling down — injury prevention basics</li>
+          <li>Screen time vs active time — understanding the trade-off</li>
+          <li>PHC Sports Challenge introduction</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Fitness Trainer</span><span class="tag g">Activity: Fitness Test</span><span class="tag r">Sports Challenge Begins</span></div>
+      </div>
+
+      <div class="month-card mc-5">
+        <div class="month-header"><div class="month-num">NOV</div><div><h4>Month 5 — Puberty & Body Changes</h4><span>Hormones · Growth · Body Awareness</span></div></div>
+        <div class="month-body"><ul>
+          <li>What is puberty? Why it happens — hormones explained simply</li>
+          <li>Changes in boys: voice, height, muscle, skin, emotions</li>
+          <li>Changes in girls: menstruation, breast development, mood, skin</li>
+          <li>Menstrual health: cycle basics, period hygiene, what's normal</li>
+          <li>Body image: what it is, why it matters, the danger of comparison</li>
+          <li>Good Touch, Bad Touch — personal safety and bodily autonomy</li>
+          <li>When to talk to an adult — recognising unsafe situations</li>
+          <li>Skin health: acne, hygiene during puberty</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Paediatrician + Psychologist</span><span class="tag r">Sensitive Topic — Separate Boys/Girls Sessions</span></div>
+      </div>
+
+      <div class="month-card mc-6">
+        <div class="month-header"><div class="month-num">DEC</div><div><h4>Month 6 — Mental Health Basics</h4><span>Emotions · Stress · Anxiety Awareness</span></div></div>
+        <div class="month-body"><ul>
+          <li>What is mental health? Why it is as real as physical health</li>
+          <li>Emotional vocabulary — naming your feelings accurately</li>
+          <li>Stress: what causes it, what it does to the body</li>
+          <li>Healthy vs unhealthy stress responses</li>
+          <li>Anxiety: what it is, how to recognise it in yourself and friends</li>
+          <li>Practical stress relief techniques: breathing, journaling, movement</li>
+          <li>When to ask for help — and how to ask</li>
+          <li>Exam stress management — seasonal topic (December = exams)</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Child Psychologist</span><span class="tag g">Activity: Stress Journal</span></div>
+      </div>
+
+      <div class="month-card mc-7">
+        <div class="month-header"><div class="month-num">JAN</div><div><h4>Month 7 — Sleep & Screen Health</h4><span>Rest · Digital Wellness · Recovery</span></div></div>
+        <div class="month-body"><ul>
+          <li>Sleep science: what happens in the brain and body during sleep</li>
+          <li>How much sleep do 10–14 year olds actually need? (9–11 hours)</li>
+          <li>What screen time does to sleep quality — blue light, stimulation</li>
+          <li>Social media and the comparison trap — dopamine explained simply</li>
+          <li>Signs you are addicted to your phone — honest self-check</li>
+          <li>Digital detox: what it is and how to try it</li>
+          <li>Sleep hygiene: simple habits for better rest</li>
+          <li>Creating a bedtime routine — students design their own</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist</span><span class="tag g">Activity: Sleep Log (2 weeks)</span></div>
+      </div>
+
+      <div class="month-card mc-8">
+        <div class="month-header"><div class="month-num">FEB</div><div><h4>Month 8 — Social Health & Relationships</h4><span>Friendships · Peer Pressure · Boundaries</span></div></div>
+        <div class="month-body"><ul>
+          <li>What is social health? Why relationships affect physical health</li>
+          <li>Qualities of a healthy friendship vs a toxic one</li>
+          <li>Peer pressure: recognising it, handling it without conflict</li>
+          <li>Setting boundaries — what they are and why they matter</li>
+          <li>Bullying: types (including cyber), impact, what to do</li>
+          <li>Empathy and active listening — practise exercises</li>
+          <li>Building a support network — who is in your corner?</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist</span><span class="tag g">Activity: Relationship Map</span></div>
+      </div>
+
+      <div class="month-card mc-9">
+        <div class="month-header"><div class="month-num">MAR</div><div><h4>Month 9 — Moral Health & Values</h4><span>Ethics · Character · Purpose</span></div></div>
+        <div class="month-body"><ul>
+          <li>What is moral health? Values, integrity, and why they matter</li>
+          <li>Decision-making framework: how to make good choices under pressure</li>
+          <li>Honesty, accountability, and respect — real-life dilemma discussions</li>
+          <li>Environmental health: our responsibility to the world we live in</li>
+          <li>Introduction to financial awareness: needs vs wants, saving basics</li>
+          <li>Giving back: community health, volunteering, leadership in your school</li>
+          <li>PHC Health Awareness Pledge — annual renewal</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Life Coach / Values Educator</span><span class="tag gold">Annual Pledge</span></div>
+      </div>
+
+      <div class="month-card mc-10">
+        <div class="month-header"><div class="month-num">APR</div><div><h4>Month 10 — Review, Assessment & Celebration</h4><span>Certifications · Activity Day · Report Card</span></div></div>
+        <div class="month-body"><ul>
+          <li>Year-end health knowledge assessment (not an exam — a reflection tool)</li>
+          <li>Personal health journey comparison: July baseline vs April current</li>
+          <li>Health Report Card final update — issued to parents</li>
+          <li>Annual Activity & Health Day — whole school event</li>
+          <li>PHC Awareness Certificates awarded (signed by Sakshi Malik)</li>
+          <li>School Health Awareness Leader recognition</li>
+          <li>Student health pledges shared with parents</li>
+          <li>Summer health challenge launched (continues independently)</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag g">Certification Day</span><span class="tag b">Activity Day</span><span class="tag gold">Report Cards</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. LEVEL ADVANCED CURRICULUM ===== -->
+  <section class="ds" id="advanced">
+    <p class="ey">Section 5</p>
+    <h2>Level Advanced Curriculum — Class 9 to 12</h2>
+    <p class="sdesc">Ages 14–18. Deeper, more independent, life-skills oriented. Weekly sessions + monthly expert visits + peer-led discussions. Certification pathway.</p>
+
+    <div class="co warn">
+      <span class="co-icon">⚠️</span>
+      <div><h5>Design Philosophy — Advanced Level</h5>
+      <p>This age group is under board exam pressure, forming romantic relationships, questioning identity, and about to enter adult financial life. The curriculum is life-skills first — more peer discussion, less didactic teaching. Includes topics that are taboo in most Indian schools (sexual health, relationship anxiety, mental health disorders) but are essential for this age group. Delivery must be sensitive, evidence-based, and non-judgmental at all times.</p></div>
+    </div>
+
+    <div class="month-grid">
+      <div class="month-card mc-1">
+        <div class="month-header"><div class="month-num">JUL</div><div><h4>Month 1 — Advanced Nutrition Science</h4><span>Body Composition · Obesity · Metabolism</span></div></div>
+        <div class="month-body"><ul>
+          <li>Understanding body composition: muscle, fat, bone, water</li>
+          <li>Obesity in India — statistics, causes, consequences (not shame-based)</li>
+          <li>Metabolism: what it is, how to work with it, not against it</li>
+          <li>Eating disorders: anorexia, bulimia, binge eating — awareness and help</li>
+          <li>Supplements: protein powder, vitamins — what works, what is marketing</li>
+          <li>Nutrition for exam periods: foods that help cognition</li>
+          <li>Plant-based vs omnivore diets — evidence, not ideology</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Senior Nutritionist</span><span class="tag r">Eating Disorder Awareness</span></div>
+      </div>
+
+      <div class="month-card mc-2">
+        <div class="month-header"><div class="month-num">AUG</div><div><h4>Month 2 — Sports Science & Physical Performance</h4><span>Muscle · Strength · Recovery</span></div></div>
+        <div class="month-body"><ul>
+          <li>Muscle anatomy basics — how muscles grow, recover, and are injured</li>
+          <li>Strength training fundamentals — safe for teenagers</li>
+          <li>Aerobic vs anaerobic exercise — when and why</li>
+          <li>Sports injuries: prevention, first aid, RICE protocol</li>
+          <li>Recovery: active recovery, rest days, ice/heat, sleep</li>
+          <li>Steroids and performance enhancers — the real truth for teens</li>
+          <li>Designing a personal fitness programme (project)</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Fitness Trainer / Sports Physiotherapist</span><span class="tag g">Project: Personal Fitness Plan</span></div>
+      </div>
+
+      <div class="month-card mc-3">
+        <div class="month-header"><div class="month-num">SEP</div><div><h4>Month 3 — Reproductive & Sexual Health</h4><span>Consent · Hormones · Safe Relationships</span></div></div>
+        <div class="month-body"><ul>
+          <li>Reproductive anatomy — accurate, age-appropriate information</li>
+          <li>Hormones and teenage behaviour: why you feel what you feel</li>
+          <li>Consent: what it means, how to give it and receive it, why it matters</li>
+          <li>Sexual health basics: STIs awareness, safe practices (Class 11–12)</li>
+          <li>POCSO Act: your rights, what is abuse, how to report</li>
+          <li>Healthy vs unhealthy relationships — early warning signs</li>
+          <li>Online safety: sexting risks, digital consent, predators</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Gynaecologist + Psychologist</span><span class="tag r">Separate delivery by class (9–10 vs 11–12)</span></div>
+      </div>
+
+      <div class="month-card mc-4">
+        <div class="month-header"><div class="month-num">OCT</div><div><h4>Month 4 — Mental Health Deep Dive</h4><span>Depression · Anxiety · Seeking Help</span></div></div>
+        <div class="month-body"><ul>
+          <li>Mental health disorders vs everyday stress — understanding the spectrum</li>
+          <li>Depression: what it is, what it is not, how to recognise it</li>
+          <li>Anxiety disorders: generalised anxiety, social anxiety, panic attacks</li>
+          <li>Self-harm awareness: why it happens, what to do if you or a friend is affected</li>
+          <li>Therapy: types, how to access it, how to ask parents for help</li>
+          <li>Mental health in Indian families: breaking the stigma conversation</li>
+          <li>Mindfulness practices: 5-min daily routines that are evidence-based</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist / Psychiatrist</span><span class="tag r">Crisis Protocol Shared with School</span></div>
+      </div>
+
+      <div class="month-card mc-5">
+        <div class="month-header"><div class="month-num">NOV</div><div><h4>Month 5 — Relationship Health & Anxiety</h4><span>Love · Attachment · Emotional Intelligence</span></div></div>
+        <div class="month-body"><ul>
+          <li>Attachment styles: secure, anxious, avoidant — how they form and affect relationships</li>
+          <li>Relationship anxiety: signs, causes, how to manage it</li>
+          <li>Romantic relationships at this age: healthy expectations</li>
+          <li>Heartbreak and emotional resilience</li>
+          <li>Family relationships: communication with parents, managing conflict</li>
+          <li>Emotional intelligence: empathy, self-regulation, social skills</li>
+          <li>Loneliness: recognising it, addressing it, when it becomes a health issue</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Relationship Psychologist</span><span class="tag p">Peer Discussion Format</span></div>
+      </div>
+
+      <div class="month-card mc-6">
+        <div class="month-header"><div class="month-num">DEC</div><div><h4>Month 6 — Financial Health & Wellness</h4><span>Money · Insurance · Health Economics</span></div></div>
+        <div class="month-body"><ul>
+          <li>Why financial health is health: stress, debt, and physical wellbeing</li>
+          <li>Banking basics: savings account, FD, compound interest — start now</li>
+          <li>UPI, digital payments and financial safety for teenagers</li>
+          <li>Health insurance: what it is, why families need it, how to read a policy</li>
+          <li>Budgeting for health: how to eat well on a student budget</li>
+          <li>Debt and its psychological effects — awareness for teenagers</li>
+          <li>Financial goals: how to set them and build the discipline</li>
+          <li>Guest: Bank representative (HDFC / SBI School Banking tie-up)</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Financial Literacy Specialist + Bank Rep</span><span class="tag gold">Bank Tie-up Required</span></div>
+      </div>
+
+      <div class="month-card mc-7">
+        <div class="month-header"><div class="month-num">JAN</div><div><h4>Month 7 — Yoga, Mindfulness & Breathwork</h4><span>Advanced Practice · Stress Science · Inner Health</span></div></div>
+        <div class="month-body"><ul>
+          <li>Yoga philosophy for adolescents — beyond just asanas</li>
+          <li>Advanced pranayama: Anulom Vilom, Kapalabhati, Bhramari — science and practice</li>
+          <li>Meditation: different styles, finding what works for you</li>
+          <li>The neuroscience of mindfulness — what changes in the brain</li>
+          <li>Yoga for anxiety and exam stress — targeted sequences</li>
+          <li>Yoga Nidra: guided deep relaxation for recovery</li>
+          <li>Yoga certification pathway — optional additional track</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Senior Yoga Instructor (AYUSH Certified)</span><span class="tag p">Yoga Certification Track</span></div>
+      </div>
+
+      <div class="month-card mc-8">
+        <div class="month-header"><div class="month-num">FEB</div><div><h4>Month 8 — Board Exam Wellness</h4><span>Performance · Pressure · Cognitive Health</span></div></div>
+        <div class="month-body"><ul>
+          <li>The biology of exam stress — cortisol, adrenaline, and performance</li>
+          <li>Study science: how memory works, spaced repetition, active recall</li>
+          <li>Nutrition for exam performance: what to eat, what to avoid</li>
+          <li>Sleep and memory consolidation — why all-nighters backfire</li>
+          <li>Managing parental pressure: a conversation guide</li>
+          <li>Post-exam identity anxiety: what to do after results</li>
+          <li>Career choices and health: finding work that sustains wellbeing</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist + Nutritionist</span><span class="tag r">Board Exam Season — High Priority</span></div>
+      </div>
+
+      <div class="month-card mc-9">
+        <div class="month-header"><div class="month-num">MAR</div><div><h4>Month 9 — Leadership, Purpose & Life Skills</h4><span>Career Wellness · Moral Health · Adulting</span></div></div>
+        <div class="month-body"><ul>
+          <li>What is a healthy life? Defining your own version</li>
+          <li>Life skills: cooking basics, first aid, emergency preparedness</li>
+          <li>Career and health: choosing work that aligns with your wellbeing</li>
+          <li>Volunteering and giving back as a health practice</li>
+          <li>Environmental health: pollution, sustainability, your body's exposure</li>
+          <li>Transitions: leaving school, starting college — emotional health of change</li>
+          <li>Creating a personal health manifesto — capstone project</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Life Coach / Career Counsellor</span><span class="tag gold">Capstone Project</span></div>
+      </div>
+
+      <div class="month-card mc-10">
+        <div class="month-header"><div class="month-num">APR</div><div><h4>Month 10 — Certification & Graduation</h4><span>Assessment · Awards · PHC Graduation</span></div></div>
+        <div class="month-body"><ul>
+          <li>Final health literacy assessment — portfolio-based, not exam-based</li>
+          <li>Health Report Card final edition — 2-year comparative for Class 9–10</li>
+          <li>PHC Advanced Health Certificate — signed by Sakshi Malik</li>
+          <li>Annual Activity & Health Day — Advanced category showcase</li>
+          <li>Student health leadership awards</li>
+          <li>Class 12 PHC Graduation: health pledge for adult life</li>
+          <li>Alumni network: PHC graduates staying connected to health</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag g">Advanced Certificate</span><span class="tag b">PHC Graduation</span><span class="tag gold">Sakshi Malik Signed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6. TOPICS DEEP DIVE ===== -->
+  <section class="ds" id="topics">
+    <p class="ey">Section 6</p>
+    <h2>All Topics — Deep Dive Reference</h2>
+    <p class="sdesc">Every topic area expanded — what it covers, why it matters, delivery notes, and sensitive topic handling.</p>
+
+    <details><summary>🥗 Nutrition (Proteins, Carbs, Fats, Micronutrients)</summary>
+    <div class="db">
+      <p><strong>Why it's critical:</strong> India has among the highest rates of childhood protein deficiency and micronutrient anaemia globally. Most children don't know what a macronutrient is, let alone how much protein they need daily.</p>
+      <p><strong>Core concepts:</strong></p>
+      <ul>
+        <li>Macros: Protein (builds/repairs), Carbohydrates (fuel), Fats (brain, hormones, absorption)</li>
+        <li>Protein needs by age: ~0.9g/kg body weight for 10–14, ~1.1g/kg for 14–18</li>
+        <li>Best protein sources for Indian children: dal, paneer, eggs, soy, sprouts, milk</li>
+        <li>Iron-rich foods: leafy greens, jaggery, sesame — critical for menstruating girls</li>
+        <li>Vitamin D deficiency epidemic in urban Indian children — sunlight + dairy</li>
+        <li>The danger of ultra-processed food — additives, preservatives, empty calories</li>
+      </ul>
+      <p><strong>Delivery tools:</strong> Protein Meter app tracker, Food Card game, Canteen Audit exercise, Nutrition Label reading workshop, "Design Your Thali" activity</p>
+      <p><strong>Expert required:</strong> Registered Nutritionist / Dietitian (BSc/MSc Nutrition or RD registered)</p>
+    </div></details>
+
+    <details><summary>💪 Physical Fitness & Exercise Science</summary>
+    <div class="db">
+      <ul>
+        <li>Aerobic fitness (cardio): running, swimming, cycling, dancing, aerobics — 60 min/day recommended</li>
+        <li>Muscular strength and endurance: bodyweight exercises safe for all ages from Class 5</li>
+        <li>Flexibility: yoga, stretching — especially important during rapid growth phases</li>
+        <li>Balance and coordination: important for injury prevention</li>
+        <li>Sedentary behaviour: sitting for &gt;2 hours = independent health risk factor</li>
+        <li>PE vs PHC: PHC teaches the why and how; PE provides the practice</li>
+      </ul>
+      <p><strong>Key message:</strong> Movement is medicine. 30 minutes of daily movement reduces all-cause mortality by 35%. Frame this as science, not punishment.</p>
+      <p><strong>Expert required:</strong> Certified Fitness Trainer (NASM/ACE/ISSA) with experience working with minors</p>
+    </div></details>
+
+    <details><summary>🧠 Mental Health (Stress, Anxiety, Depression Awareness)</summary>
+    <div class="db">
+      <ul>
+        <li>1 in 5 Indian adolescents has a diagnosable mental health condition — most go undiagnosed</li>
+        <li>Stress: normal cortisol response vs chronic stress — how to tell the difference</li>
+        <li>Anxiety: generalised, social, performance — symptoms and coping strategies</li>
+        <li>Depression: not "just sadness" — persistent low mood, loss of interest, physical symptoms</li>
+        <li>Stigma in Indian families: most children don't tell parents because of fear of reaction</li>
+        <li>SEL (Social Emotional Learning): embedded in all sessions, not just mental health months</li>
+      </ul>
+      <p><strong>Sensitive handling:</strong> Never single out students. Always provide anonymous Q&A option. Counsellor present or on-call during mental health sessions. Clear referral pathway established with school before delivery.</p>
+      <p><strong>Expert required:</strong> RCI-registered Clinical Psychologist / M.Phil Clinical Psychology</p>
+    </div></details>
+
+    <details><summary>🩺 Puberty, Sexual Health & Good Touch Bad Touch</summary>
+    <div class="db">
+      <ul>
+        <li>Good Touch Bad Touch: Class 5–6 level — body autonomy, safe vs unsafe touch, telling a trusted adult</li>
+        <li>Puberty (Class 6–8): physical changes, emotional changes, hygiene, menstruation for girls</li>
+        <li>Sexual health (Class 9–12): consent, healthy relationships, reproductive anatomy, STI awareness</li>
+        <li>POCSO Act: every student in Class 5–12 should know their legal rights</li>
+        <li>Online safety: digital consent, sexting dangers, grooming awareness</li>
+      </ul>
+      <p><strong>Delivery protocol:</strong> Boys and girls in separate sessions for puberty topics. Parent information letter sent before module begins. Opt-out option provided (though not encouraged). All content reviewed by psychologist and paediatrician before delivery.</p>
+      <p><strong>Experts required:</strong> Paediatrician + Child Psychologist. For Class 11–12 sexual health: Gynaecologist for girls, Urologist/General Physician for boys.</p>
+    </div></details>
+
+    <details><summary>💰 Financial Health & Money Literacy</summary>
+    <div class="db">
+      <ul>
+        <li>Why here? Financial stress is one of the top drivers of adult mental and physical health problems. Starting awareness at 15–17 changes trajectories.</li>
+        <li>Savings accounts: compound interest, SIP basics, why starting early matters</li>
+        <li>UPI and digital payment safety — scam awareness for teenagers</li>
+        <li>Health insurance literacy: premium, deductible, cashless, pre-existing conditions</li>
+        <li>Budgeting: 50/30/20 rule explained simply — needs, wants, savings</li>
+        <li>Debt psychology: why credit cards feel good and are often harmful</li>
+        <li>Career and income: choosing work that pays enough to live healthily</li>
+      </ul>
+      <p><strong>Partnership required:</strong> Bank tie-up (HDFC/SBI/ICICI school banking programme). Banks already have school outreach CSR budgets — approach their CSR/financial literacy teams.</p>
+    </div></details>
+
+    <details><summary>🧘 Yoga, Mindfulness & Breathwork</summary>
+    <div class="db">
+      <ul>
+        <li>Class 1–4 (Foundation): simple stretches, breathing games, body awareness</li>
+        <li>Class 5–8 (Basic): formal asanas (Surya Namaskar, standing poses), pranayama basics, 10-min guided relaxation</li>
+        <li>Class 9–12 (Advanced): advanced pranayama, meditation styles, Yoga Nidra, yoga for specific conditions (anxiety, back pain, insomnia)</li>
+        <li>AYUSH Ministry alignment: mandatory yoga in CBSE schools — PHC provides the certified instructor and structured curriculum</li>
+        <li>Yoga certification: students who complete 2 years of PHC yoga track earn a Yoga Awareness Certificate</li>
+      </ul>
+      <p><strong>Expert required:</strong> AYUSH-certified yoga instructor with 200-hr YTT minimum. Ideally RYT-500 for Advanced level delivery. One instructor per school on weekly retainer.</p>
+    </div></details>
+
+    <details><summary>🤝 Social Health, Relationships & Moral Health</summary>
+    <div class="db">
+      <ul>
+        <li>Peer relationships: friendship quality predicts mental health outcomes more than almost any other factor in adolescence</li>
+        <li>Bullying: 40% of Indian school children report being bullied — recognition, reporting, bystander intervention</li>
+        <li>Moral health: integrity, honesty, accountability — framed as life-skills, not preaching</li>
+        <li>Community health: environmental responsibility, social justice, giving back</li>
+        <li>Digital relationships: online friendships, parasocial relationships, gaming addiction</li>
+      </ul>
+      <p><strong>Delivery format:</strong> Circle discussions, role-play, anonymous scenario cards. Not lecture-format. Peer-led for Advanced level.</p>
+    </div></details>
+
+    <details><summary>🦷 Dental Health</summary>
+    <div class="db">
+      <p><strong>Why it's critical:</strong> India has among the highest rates of childhood dental caries globally. Studies show 60–80% of Indian school children have cavities. Dental health is almost entirely absent from school curricula despite being directly connected to nutrition, sleep, confidence, and systemic health.</p>
+      <ul>
+        <li>Oral anatomy: teeth types (incisors, canines, molars), their functions, adult vs milk teeth</li>
+        <li>Brushing technique: the correct method (2 minutes, circular motion, all surfaces), twice daily, when to replace toothbrush</li>
+        <li>Flossing and tongue cleaning: why brushing alone is insufficient</li>
+        <li>Diet and teeth: how sugar causes caries — acid production by oral bacteria explained simply</li>
+        <li>Foods that protect teeth: calcium-rich foods (milk, paneer, ragi), fibrous vegetables, water</li>
+        <li>Foods that damage teeth: sugary drinks, sticky sweets, excess citrus, acidic sodas</li>
+        <li>Fluoride: why it matters, fluoride toothpaste, fluoride in water</li>
+        <li>Dental checkups: why every child should see a dentist twice a year — most Indian children never do</li>
+        <li>Gum disease: gingivitis basics — signs, prevention, why gums bleed</li>
+        <li>Oral hygiene during puberty: hormonal changes increase gum sensitivity</li>
+        <li>Mouth guards for sports: protection during physical activity</li>
+        <li>Dental emergencies: what to do if a tooth gets knocked out</li>
+      </ul>
+      <p><strong>Partnership required:</strong> Dental clinic tie-up for annual dental checkup camps in school. Dental schools (BDS/MDS programmes) often do free school outreach. Target: Manipal College of Dental Sciences, AIIMS Dental, private dental chains (Clove Dental, MyDentist).</p>
+      <p><strong>Expert required:</strong> BDS/MDS registered dentist for annual camp. Dental hygienist for monthly awareness sessions.</p>
+      <p><strong>Activity:</strong> "Plaque Disclosure Tablet" experiment — students use disclosing tablets to see exactly where they missed while brushing. Highly effective, memorable, and fun.</p>
+    </div></details>
+
+    <details><summary>🧼 Personal Hygiene</summary>
+    <div class="db">
+      <p><strong>Why it's critical:</strong> Personal hygiene is the single most impactful public health behaviour. Proper hand hygiene alone prevents 50% of infectious disease transmission. Yet many Indian children are never taught the correct methods or the science behind why hygiene matters.</p>
+      <strong>Sub-topics covered:</strong>
+      <ul>
+        <li><strong>Hand hygiene:</strong> The 6-step WHO handwashing technique, when to wash hands (before eating, after toilet, after touching animals, after school), soap vs sanitiser, the difference between washing and rinsing</li>
+        <li><strong>Bathing and skin care:</strong> Daily bathing importance, proper technique, skin pH and why harsh soaps harm it, moisturising in dry seasons, acne hygiene (gentle cleansing vs scrubbing)</li>
+        <li><strong>Hair care:</strong> Frequency of washing, scalp hygiene, lice prevention and treatment (destigmatised), oiling practices — when they help vs create problems</li>
+        <li><strong>Nail care:</strong> Trimming nails, cleaning under nails, why long nails harbour bacteria, nail-biting and its health implications</li>
+        <li><strong>Foot hygiene:</strong> Washing between toes, drying properly, fungal infections (athlete's foot), changing socks daily, proper footwear</li>
+        <li><strong>Clothing hygiene:</strong> Changing clothes daily, washing uniforms, importance of clean undergarments, fabric breathability and skin health</li>
+        <li><strong>Toilet hygiene:</strong> Proper wiping technique, handwashing after toilet, toilet seat hygiene (especially in school toilets), avoiding holding urine too long</li>
+        <li><strong>Ear and eye hygiene:</strong> Safe ear cleaning (no cotton buds inside the canal), eye washing, screen use and eye strain</li>
+        <li><strong>Respiratory hygiene:</strong> Coughing/sneezing etiquette, masking when unwell, nose blowing correctly</li>
+        <li><strong>Sweat and body odour:</strong> Puberty and increased sweating — deodorant vs antiperspirant, when body odour is normal vs a sign of illness, fabric choices</li>
+      </ul>
+      <p><strong>Expert required:</strong> Paediatrician for school hygiene sessions. School nurse / health worker for ongoing reinforcement.</p>
+      <p><strong>Delivery approach:</strong> Highly visual and activity-based. Handwashing demonstrations with UV powder. Hygiene pledge boards in school toilets. Monthly hygiene spot-checks in collaboration with school health prefects.</p>
+    </div></details>
+
+    <details><summary>🩸 Menstrual Health & Pee Safe Sanitary Kits</summary>
+    <div class="db">
+      <p><strong>Why it's critical:</strong> 1 in 4 Indian girls drops out of school after her first period. 88% of Indian girls use unsafe methods (cloth, ash, sand) during menstruation due to lack of access to sanitary products and awareness. This is a public health emergency — and PHC directly addresses it.</p>
+      <strong>Curriculum content:</strong>
+      <ul>
+        <li>Menstruation basics: what it is, why it happens, the hormonal cycle explained in simple terms</li>
+        <li>Cycle awareness: typical cycle length (21–35 days is normal), tracking your period, what variations are normal</li>
+        <li>Sanitary products: types — sanitary napkins, tampons, menstrual cups, period underwear — how each works, pros and cons</li>
+        <li>Proper disposal of sanitary products: hygiene, environment, the incinerator in school toilets</li>
+        <li>Menstrual hygiene: changing pads every 4–6 hours, washing hands before and after, bathing during periods (dispelling myths)</li>
+        <li>Period pain (dysmenorrhea): what is normal, heat pads, hydration, gentle movement vs bed rest — when pain means you should see a doctor</li>
+        <li>Period myths debunked: not "impure", not shameful, no restrictions on bathing/exercise/food during periods</li>
+        <li>Premenstrual symptoms (PMS): mood changes, bloating, cramps — understanding your body, not fighting it</li>
+        <li>Period and school: how to manage periods in school, asking for help, using the sick room</li>
+        <li>For boys: why understanding menstruation makes you a better friend, brother, and ally</li>
+        <li>Irregular periods: when to tell a parent or doctor</li>
+      </ul>
+      <strong>Pee Safe Partnership — School Sanitary Kit Programme:</strong>
+      <ul>
+        <li>Pee Safe is India's leading feminine hygiene brand with an active school outreach programme</li>
+        <li>PHC will partner with Pee Safe to provide every girl student (Class 6 onwards) with a Sanitary Kit containing: sanitary napkins (sample pack), a hygiene pouch, menstrual health pamphlet, and a Pee Safe toilet seat sanitizer spray for school toilet use</li>
+        <li>Kits distributed at the start of the academic year alongside the PHC workbook</li>
+        <li>Pee Safe to co-brand hygiene content in the PHC Student Workbook (girls' edition insert)</li>
+        <li>Pee Safe vending machine installation in girls' toilets (schools with 200+ girl students)</li>
+        <li>Pee Safe representatives conduct one annual "Menstrual Health Awareness" session for Class 6–12 girls</li>
+        <li>Approach: Pee Safe CSR team + B2B school partnership division. They have precedent for school programmes across 500+ schools.</li>
+      </ul>
+      <p><strong>Expert required:</strong> Gynaecologist for annual menstrual health session. School nurse for ongoing support. Pee Safe representative for product education.</p>
+      <p><strong>Sensitive handling:</strong> All menstrual health content delivered in gender-separated sessions. Male teachers should not lead these sessions. Female PHC coordinator or female expert required for delivery.</p>
+    </div></details>
+  </section>
+
+  <!-- ===== 7. DELIVERY FORMATS ===== -->
+  <section class="ds" id="formats">
+    <p class="ey">Section 7</p>
+    <h2>Delivery Formats</h2>
+    <p class="sdesc">How the curriculum reaches students — every channel, format and frequency.</p>
+
+    <div class="cg cg3">
+      <div class="card"><div class="ci">📚</div><h4>Weekly PHC Period</h4><p>1 dedicated 40-min period per week in the school timetable. Delivered by the class teacher (PHC-trained) using the Teacher Guide and Student Workbook. Structured lesson plans for all 40 sessions per year provided.</p><div class="ctags"><span class="tag b">In-School</span><span class="tag g">Weekly</span></div></div>
+      <div class="card"><div class="ci">👩‍⚕️</div><h4>Monthly Expert Visit</h4><p>Certified expert visits the school once a month (in-person or virtual). Delivers 45-min session to relevant class group. Rotating roster: Nutritionist → Fitness Trainer → Psychologist → Yoga Instructor → Paediatrician → Financial Expert.</p><div class="ctags"><span class="tag b">In-School</span><span class="tag r">Monthly</span></div></div>
+      <div class="card"><div class="ci">💻</div><h4>Online Expert Webinar</h4><p>Monthly live 45-min webinar open to students AND parents across all PHC schools simultaneously. Recorded and available on the PHC app. Topics follow the curriculum calendar. Scales to thousands of students at zero marginal cost.</p><div class="ctags"><span class="tag p">Virtual</span><span class="tag gold">Monthly</span></div></div>
+      <div class="card"><div class="ci">📖</div><h4>Student Workbook</h4><p>Printed workbook — one per student per year. Contains lesson summaries, reflection exercises, activity sheets, health trackers (sleep log, protein meter, BMI chart). Two editions: Basic (Class 5–8) and Advanced (Class 9–12).</p><div class="ctags"><span class="tag g">Printed</span><span class="tag b">Annual</span></div></div>
+      <div class="card"><div class="ci">🏃</div><h4>Outdoor Events & Sports</h4><p>Termly outdoor health events: fitness challenges, yoga in the park, relay races with health themes, school garden workshops. Annual Activity & Health Day (full day). Inter-school PHC sports meet (Year 2 onwards).</p><div class="ctags"><span class="tag r">Termly</span><span class="tag g">Outdoor</span></div></div>
+      <div class="card"><div class="ci">📱</div><h4>PHC App (Digital Layer)</h4><p>Student-facing: Protein Meter, sleep log, challenge tracker, badges, Health Report Card. Parent-facing: child's progress, upcoming sessions, expert webinar links. School admin: cohort dashboards, compliance reporting.</p><div class="ctags"><span class="tag p">Digital</span><span class="tag b">Daily</span></div></div>
+    </div>
+  </section>
+
+  <!-- ===== 8. BOOK / WORKBOOK ===== -->
+  <section class="ds" id="book">
+    <p class="ey">Section 8</p>
+    <h2>Published Student Workbook & Teacher Guide</h2>
+    <p class="sdesc">The physical book is a core deliverable — it makes PHC tangible, gives parents something to see, and gives teachers a clear lesson plan.</p>
+
+    <div class="cg">
+      <div class="card" style="border-top:4px solid var(--teal);">
+        <div class="ci">📗</div><h4>Student Workbook — Basic (Class 5–8)</h4>
+        <p>~120 pages. Monthly chapters aligned to curriculum. Each chapter: 2-page topic summary + reflection questions + activity sheet + health tracker page. Full colour. Sakshi Malik quote/story opener for each chapter. Space for student's own health journey notes.</p>
+        <div class="ctags"><span class="tag b">~120 pages</span><span class="tag g">Full Colour</span><span class="tag gold">Sakshi Content</span></div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--navy);">
+        <div class="ci">📘</div><h4>Student Workbook — Advanced (Class 9–12)</h4>
+        <p>~150 pages. Same structure but deeper content, more peer discussion prompts, capstone project pages. Includes financial health worksheets, relationship mapping exercises, mental health self-assessment tools. More independent reading sections.</p>
+        <div class="ctags"><span class="tag b">~150 pages</span><span class="tag p">Discussion Prompts</span><span class="tag r">Capstone Project</span></div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--gold);">
+        <div class="ci">📙</div><h4>Teacher Guide — All Levels</h4>
+        <p>One comprehensive teacher guide covering both levels. For each session: learning objectives, 5-min warm-up, 25-min core activity, 10-min reflection/discussion guide, homework suggestion. Includes how to handle sensitive topics, crisis referral protocol, parent communication templates.</p>
+        <div class="ctags"><span class="tag gold">Session Plans</span><span class="tag r">Crisis Protocol</span><span class="tag b">Parent Templates</span></div>
+      </div>
+      <div class="card" style="border-top:4px solid var(--rose);">
+        <div class="ci">🖨️</div><h4>Publishing & Print Plan</h4>
+        <p>Print on demand for Year 1 (5–10 schools). Bulk print from Year 2 (50+ schools). Publisher tie-up or self-publish via Notion Press / Kindle Direct. ISBN registration for credibility. Potential for retail sale (Amazon, Flipkart) as Year 3 revenue stream.</p>
+        <div class="ctags"><span class="tag r">ISBN Required</span><span class="tag b">Notion Press / KDP</span><span class="tag gold">Year 3 Retail</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 9. TEACHER TRAINING ===== -->
+  <section class="ds" id="teachers">
+    <p class="ey">Section 9</p>
+    <h2>Teacher Training Programme</h2>
+    <p class="sdesc">Teachers are the daily delivery engine. PHC only works if teachers are confident, informed, and equipped to handle every topic including sensitive ones.</p>
+
+    <div class="co warn">
+      <span class="co-icon">⚠️</span>
+      <div><h5>This is the most critical implementation step</h5>
+      <p>A curriculum without trained teachers is a printed book in a cupboard. Every PHC school must have at least one PHC-trained teacher before the programme begins. No exceptions.</p></div>
+    </div>
+
+    <div class="co info">
+      <span class="co-icon">👩‍🏫</span>
+      <div><h5>Delivery Split: ~30 Teacher-Led + ~10 Expert-Led Sessions a Year</h5>
+      <p>The model is built so one trained class teacher can run the great majority of the 40 weekly sessions solo, using a scripted "Teacher Cue" line on every session card. A visiting subject expert (dentist, fitness trainer, psychologist, gynaecologist, yoga instructor, bank rep) is sent in roughly once a month for the ~10 sessions a year that genuinely need specialist judgement — puberty, safety, menstrual health, sports form, mental health. This keeps the per-school cost of the expert roster bounded while every session still stays hands-on. Full week-by-week facilitator assignment: see <em>phc_40_week_curriculum.html</em>.</p></div>
+    </div>
+
+    <div class="qa"><div class="q">❓ What does the teacher training cover?</div>
+    <div class="a">
+      <p class="nt">Module 1: PHC Curriculum Overview (3 hours)</p>
+      <ul><li>The philosophy behind PHC — awareness, not performance</li>
+      <li>How to use the Teacher Guide and Student Workbook</li>
+      <li>Annual calendar overview — what happens each month</li></ul>
+      <p class="nt">Module 2: Health Literacy for Teachers (4 hours)</p>
+      <ul><li>Nutrition basics — so teachers can answer student questions confidently</li>
+      <li>Mental health awareness — recognising signs of distress in students</li>
+      <li>Puberty and body changes — how to handle questions without discomfort</li></ul>
+      <p class="nt">Module 3: Sensitive Topic Handling (2 hours)</p>
+      <ul><li>Good Touch Bad Touch — delivery protocol for Class 5–6</li>
+      <li>Mental health crisis: what to do if a student discloses self-harm or suicidal thoughts</li>
+      <li>When to involve the school counsellor or principal</li>
+      <li>Parent communication — templates and tone</li></ul>
+      <p class="nt">Module 4: Practical Delivery (2 hours)</p>
+      <ul><li>Live practice: each teacher delivers one session with feedback</li>
+      <li>Q&A handling practice — role-play difficult student questions</li>
+      <li>Using the PHC app — entering data, tracking student engagement</li></ul>
+    </div></div>
+
+    <div class="tw"><table>
+      <tr><th>Format</th><th>Duration</th><th>Frequency</th><th>Platform</th></tr>
+      <tr><td>Initial Certification Training</td><td>11 hours (2 days)</td><td>Before school year begins</td><td>Zoom / Google Meet (recorded)</td></tr>
+      <tr><td>Monthly Check-in Call</td><td>30 min</td><td>Monthly</td><td>Zoom group call — all PHC teachers</td></tr>
+      <tr><td>Refresher Training</td><td>3 hours</td><td>Annual (new content each year)</td><td>Zoom / Google Meet</td></tr>
+      <tr><td>Sensitive Topics Workshop</td><td>2 hours</td><td>Bi-annual</td><td>Zoom (CBSE 2026 mandate compliance)</td></tr>
+      <tr><td>PHC Teacher Community</td><td>Async</td><td>Ongoing</td><td>WhatsApp group / Forum</td></tr>
+    </table></div>
+
+    <div class="co ok">
+      <span class="co-icon">✅</span>
+      <div><h5>PHC Teacher Certificate</h5>
+      <p>Teachers who complete initial training receive a PHC Certified Educator certificate. This counts toward their CBSE CPD (Continuous Professional Development) hours. Renewal annually. Creates a community of PHC educators across schools.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 10. PARENT SESSIONS ===== -->
+  <section class="ds" id="parents">
+    <p class="ey">Section 10</p>
+    <h2>Parent Engagement Programme</h2>
+    <p class="sdesc">Parents are co-deliverers of health at home. If the school teaches it and the parent undermines it, nothing sticks. Parent sessions are not optional extras — they are structural.</p>
+
+    <div class="co info">
+      <span class="co-icon">📅</span>
+      <div><h5>Cadence: Monthly, Virtual, Includes Grandparents</h5>
+      <p>Runs as its own once-a-month virtual track (Zoom / Google Meet, 45–60 min) alongside the 40 weekly student sessions — it does not replace any of them. Ten sessions a year, July through April, deliberately open to grandparents as well as parents since they often run daily food and routine decisions in Indian households. The four cards below are illustrative highlights; the full 10-session monthly schedule lives in <em>phc_40_week_curriculum.html</em>.</p></div>
+    </div>
+
+    <div class="month-grid">
+      <div class="month-card mc-1">
+        <div class="month-header"><div class="month-num">Q1</div><div><h4>Parent Session 1 — Programme Launch</h4><span>July/August</span></div></div>
+        <div class="month-body"><ul>
+          <li>What PHC is and what your child will learn this year</li>
+          <li>Introduction to the Health Report Card — what parents will receive</li>
+          <li>The Protein Meter and how to support it at home</li>
+          <li>How to talk to your child about health without creating food anxiety</li>
+          <li>Q&A with Nutritionist</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Nutritionist</span><span class="tag g">In-School</span></div>
+      </div>
+      <div class="month-card mc-3">
+        <div class="month-header"><div class="month-num">Q2</div><div><h4>Parent Session 2 — Puberty & Mental Health</h4><span>October/November</span></div></div>
+        <div class="month-body"><ul>
+          <li>What your child is going through physically and emotionally at this age</li>
+          <li>How to have conversations about puberty at home — without awkwardness</li>
+          <li>Signs of mental health struggles in teenagers — what parents miss</li>
+          <li>Screen time: how much is too much, how to set limits without conflict</li>
+          <li>Q&A with Child Psychologist</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist</span><span class="tag g">In-School / Hybrid</span></div>
+      </div>
+      <div class="month-card mc-5">
+        <div class="month-header"><div class="month-num">Q3</div><div><h4>Parent Session 3 — Academic Pressure & Stress</h4><span>January/February</span></div></div>
+        <div class="month-body"><ul>
+          <li>How parental pressure affects student mental health — the data</li>
+          <li>Supporting exam preparation without adding stress</li>
+          <li>Sleep: why forcing late-night study is counterproductive</li>
+          <li>When to seek professional help for your child</li>
+          <li>How to model healthy behaviours at home</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Psychologist</span><span class="tag r">Board Exam Season</span></div>
+      </div>
+      <div class="month-card mc-7">
+        <div class="month-header"><div class="month-num">SPECIAL</div><div><h4>Grandparent Wellness Session</h4><span>Annual — October/November</span></div></div>
+        <div class="month-body"><ul>
+          <li>Traditional Indian health wisdom meets modern health science</li>
+          <li>Yoga demonstration by students for grandparents</li>
+          <li>Paediatrician Q&A: common health questions from senior family members</li>
+          <li>Nutrition: traditional foods that science now validates</li>
+          <li>Inter-generational health pledge — family takes the pledge together</li>
+        </ul></div>
+        <div class="month-footer"><span class="tag b">Expert: Doctor + Yoga Instructor</span><span class="tag gold">Unique Differentiator</span></div>
+      </div>
+    </div>
+
+    <div class="co ok">
+      <span class="co-icon">🩺</span>
+      <div><h5>BMI & Health Screening — 3x a Year</h5>
+      <p>Height, weight and BMI are checked at three fixed points per student per year — baseline (year-open), midterm, and year-end — bundled into the same weeks as the annual vision, hearing, dental and haemoglobin camps rather than run as separate visits. Results roll into a per-student Health Report Card with plain-English suggestions, walked through with parents at the matching Monthly Meet. Full metric list, frequency table, suggestion logic and privacy rules: see <em>phc_health_report_card_framework.html</em>.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 11. EXPERT ROSTER ===== -->
+  <section class="ds" id="experts">
+    <p class="ey">Section 11</p>
+    <h2>Expert Roster — Full Requirements</h2>
+    <p class="sdesc">Every expert type needed, their qualifications, engagement model, and sourcing strategy.</p>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">🥗</span><div><div class="pc-title">Registered Nutritionist / Dietitian</div><div class="pc-sub">Core Roster — Every School</div></div></div>
+      <div class="pc-body">Delivers monthly in-school nutrition sessions, parent nutrition workshops, canteen audit recommendations, Protein Meter calibration per age group. Co-leads Health Report Card (nutrition section). Joins monthly online webinar rotation.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">BSc/MSc Nutrition & Dietetics or RD registered</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — ₹X per school visit, per school</div></div>
+        <div class="pc-kv"><div class="k">Sessions/Year</div><div class="v">~18 (10 in-school + 4 parent + 4 webinars)</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">Indian Dietetic Association, hospital nutrition departments, private practice networks</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">🧘</span><div><div class="pc-title">AYUSH-Certified Yoga Instructor</div><div class="pc-sub">Weekly In-School — On Retainer</div></div></div>
+      <div class="pc-body">Weekly yoga sessions across all school levels. Informal stretching for Class 1–4, formal asanas for Class 5–8, advanced pranayama + meditation for Class 9–12. Runs grandparent wellness session yoga component. Manages yoga certification pathway for students.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">AYUSH certified / 200-hr YTT minimum. RYT-500 preferred for Advanced.</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Retainer — weekly visits per school. 1 instructor per school ideally.</div></div>
+        <div class="pc-kv"><div class="k">Sessions/Year</div><div class="v">~72 (2x/week × 36 school weeks)</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">AYUSH Ministry portal, yoga studio networks, Isha Yoga, Art of Living trained instructors</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">💪</span><div><div class="pc-title">Aerobics Instructor / Movement Facilitator</div><div class="pc-sub">Weekly In-School</div></div></div>
+      <div class="pc-body">Weekly aerobics and structured movement sessions. Cardiovascular health, coordination, group energy. Works with fitness trainer on phased physical curriculum. Leads Sports Challenge events and Activity Day preparation.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">ISSA / NASM certified group fitness / aerobics instructor</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — weekly visits. Can share with yoga instructor if dual-certified.</div></div>
+        <div class="pc-kv"><div class="k">Sessions/Year</div><div class="v">~36 (1x/week × 36 school weeks)</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">Cult.fit / Cure.fit instructor network, local gym instructor partnerships</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">🏋️</span><div><div class="pc-title">Certified Fitness Trainer</div><div class="pc-sub">Bi-Weekly or Monthly</div></div></div>
+      <div class="pc-body">Designs and reviews fitness protocols aligned with Health Report Card baselines. Runs fitness assessments termly. Trains school PT teacher to run daily sessions independently. Leads Activity Day physical events.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">CPT (NASM/ACE/ISSA). Experience with minors mandatory.</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — bi-monthly visits + school PT teacher training</div></div>
+        <div class="pc-kv"><div class="k">Sessions/Year</div><div class="v">~24 direct + PT handover training quarterly</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">Gym/fitness studio networks, Gold's Gym, Anytime Fitness city partners</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">🧠</span><div><div class="pc-title">Child & Adolescent Psychologist</div><div class="pc-sub">Monthly — CBSE Mandate Critical</div></div></div>
+      <div class="pc-body">Delivers monthly mental health sessions, counsellor capacity building (50+ hrs — CBSE mandate), bi-annual staff mental health training, mental health screening. Handles all sensitive topic sessions (Good Touch Bad Touch, puberty, relationship health, depression awareness). Crisis referral protocols setup.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">M.Phil Clinical Psychology / RCI registered / NIMHANS trained preferred</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — monthly in-school + virtual availability</div></div>
+        <div class="pc-kv"><div class="k">Sessions/Year</div><div class="v">~22 (10 student + 4 parent + 2 staff training + 4 webinars + 2 screening days)</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">iCall, Vandrevala Foundation, NIMHANS affiliated clinicians, private practice networks</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">👨‍⚕️</span><div><div class="pc-title">Paediatrician / School Doctor</div><div class="pc-sub">Termly Health Camps + Webinars</div></div></div>
+      <div class="pc-body">Conducts annual health checkup camps (BMI, vision, hearing, dental, haemoglobin, blood pressure). Populates medical section of Health Report Card. Flags at-risk students for school and parents. Leads grandparent session medical Q&A. Monthly webinar rotation.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">MBBS + MD Paediatrics / MCI registered</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — 2 camp days/year + 4 online webinars</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">Apollo Hospitals, Fortis, Max Healthcare school health tie-ups. Local paediatric clinics.</div></div>
+      </div>
+    </div>
+
+    <div class="pc">
+      <div class="pc-head"><span class="pc-icon">💰</span><div><div class="pc-title">Financial Literacy Specialist</div><div class="pc-sub">Monthly (Advanced Level Only)</div></div></div>
+      <div class="pc-body">Delivers financial health curriculum for Class 9–12. Covers banking, insurance, budgeting, UPI safety. Coordinates with bank tie-up partner for school banking programme. Leads financial wellness webinar in the annual calendar.</div>
+      <div class="pc-grid">
+        <div class="pc-kv"><div class="k">Qualification</div><div class="v">CFP / CA / Financial Educator certified. Experience with young audiences.</div></div>
+        <div class="pc-kv"><div class="k">Engagement</div><div class="v">Contract — 3 in-school sessions/year + 1 webinar</div></div>
+        <div class="pc-kv"><div class="k">Source</div><div class="v">Bank CSR teams, SEBI-registered financial educators, NSE Academy</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 12. INSTITUTIONAL TIE-UPS ===== -->
+  <section class="ds" id="partnerships">
+    <p class="ey">Section 12</p>
+    <h2>Institutional Partnerships & Tie-ups</h2>
+    <p class="sdesc">Every external institution needed — hospitals, banks, yoga bodies, government, media — and how to approach them.</p>
+
+    <details><summary>🏥 Hospital / Healthcare Networks</summary>
+    <div class="db">
+      <p><strong>Why needed:</strong> Source of paediatricians, psychologists, gynaecologists, and physiotherapists for expert visits. Health checkup camps require a medical team.</p>
+      <strong>Target Hospitals:</strong>
+      <ul>
+        <li>Apollo Hospitals — has a community health / school health CSR division</li>
+        <li>Fortis Healthcare — school health tie-ups precedent exists</li>
+        <li>Max Healthcare — Delhi/NCR strong</li>
+        <li>Manipal Hospitals — South India scale</li>
+        <li>Government District Hospitals — for government school partnerships</li>
+      </ul>
+      <p><strong>Approach:</strong> CSR department first. PHC offers brand association + guaranteed school access (hard for hospitals to get independently). Structure: hospital provides experts at subsidised rate; PHC provides school access and brand visibility. Sign MOU with 1-year term.</p>
+      <p><strong>Ask:</strong> Minimum 1 paediatrician + 1 psychologist per city. 2 health camp days per school per year. Hospital branding on Health Report Card.</p>
+    </div></details>
+
+    <details><summary>🏦 Banks (Financial Literacy Tie-up)</summary>
+    <div class="db">
+      <p><strong>Why needed:</strong> Financial health curriculum for Class 9–12 requires a bank expert. Banks also benefit — school banking programme onboards future customers.</p>
+      <strong>Target Banks:</strong>
+      <ul>
+        <li>HDFC Bank — has "Parivartan" CSR programme with strong school focus</li>
+        <li>SBI — School Savings Bank account programme already exists</li>
+        <li>ICICI Bank — "Financial Literacy" is a stated CSR pillar</li>
+        <li>Kotak Mahindra Bank — youth banking initiatives</li>
+      </ul>
+      <p><strong>Approach:</strong> CSR team + Retail Banking division simultaneously. PHC offers: captive audience of 500+ students per school, parent engagement touchpoint, brand visibility in workbook and app. Bank provides: financial literacy specialist for sessions, school banking account setup, co-branded financial health content in workbook.</p>
+    </div></details>
+
+    <details><summary>🧘 Yoga Bodies & Wellness Networks</summary>
+    <div class="db">
+      <ul>
+        <li><strong>Ministry of AYUSH</strong> — official alignment gives PHC government credibility. Apply for AYUSH recognition of PHC yoga curriculum.</li>
+        <li><strong>Yoga Certification Board (QCI)</strong> — source of certified instructors, potential co-branding</li>
+        <li><strong>Art of Living Foundation</strong> — has a school programme; potential curriculum sharing or instructor sourcing</li>
+        <li><strong>Isha Foundation</strong> — Isha Vidhya schools programme; instructor network</li>
+        <li><strong>Cult.fit / HRX</strong> — corporate wellness brands with instructor networks; potential city-level partnerships for aerobics/fitness trainers</li>
+      </ul>
+    </div></details>
+
+    <details><summary>🏛️ Government & CBSE Alignment</summary>
+    <div class="db">
+      <ul>
+        <li><strong>CBSE</strong> — formal recognition of PHC as an approved school health programme. Apply to CBSE Academic Unit. AB-SHWP compliance documentation to submit alongside application.</li>
+        <li><strong>Ministry of Health & Family Welfare (MoH&FW)</strong> — AB-SHWP is their initiative. PHC should formally register as an AB-SHWP implementation partner.</li>
+        <li><strong>Ministry of Education</strong> — NEP 2020 includes health as a core competency. PHC aligns directly.</li>
+        <li><strong>State Education Departments</strong> — especially Delhi (strongest initial market). Approach SCERT (State Council of Educational Research and Training) for state-level endorsement.</li>
+        <li><strong>National Health Mission (NHM)</strong> — school health component. PHC can piggyback on NHM district health officers for launch events.</li>
+      </ul>
+    </div></details>
+
+    <details><summary>📺 Media & PR Partnerships</summary>
+    <div class="db">
+      <ul>
+        <li><strong>Sakshi Malik's existing media profile</strong> — TIME 100, national sports media, Doordarshan reach. Leverage for PR at every launch event.</li>
+        <li><strong>Print media</strong>: Education supplements in Hindustan Times, Times of India, Indian Express — PHC story is compelling (Olympian + school health).</li>
+        <li><strong>Sports channels</strong>: Star Sports, Sony Sports — Sakshi Malik's profile gets PHC health education stories placed.</li>
+        <li><strong>Social media</strong>: PHC's Instagram (@phcsakshimalik) + Sakshi's own accounts. Every school launch = content. Every certification day = content.</li>
+        <li><strong>YouTube</strong>: PHC curriculum video series — short (3–5 min) health awareness videos with Sakshi Malik. Free content that builds brand and drives school enquiries.</li>
+      </ul>
+    </div></details>
+
+    <details><summary>🎓 Academic / Research Partnerships</summary>
+    <div class="db">
+      <ul>
+        <li><strong>AIIMS New Delhi</strong> — Department of Community Medicine. Research partner for measuring PHC health outcomes. Annual report on student health improvements gives PHC credibility.</li>
+        <li><strong>Lady Irwin College (Delhi University)</strong> — Nutrition department. Source of nutritionist interns and research collaboration.</li>
+        <li><strong>NIMHANS Bangalore</strong> — Mental health curriculum review and psychologist sourcing.</li>
+        <li><strong>SPM (Social Preventive Medicine) departments</strong> at MAMC, UCMS, etc. — academic validation of PHC methodology.</li>
+      </ul>
+    </div></details>
+  </section>
+
+  <!-- ===== 13. OPERATIONS ===== -->
+  <section class="ds" id="ops">
+    <p class="ey">Section 13</p>
+    <h2>Operations Setup</h2>
+    <p class="sdesc">The internal team, systems, and processes needed to run PHC at scale.</p>
+
+    <div class="cg">
+      <div class="card"><div class="ci">🧭</div><h4>Programme Director</h4><p>Owns curriculum quality, expert network, CBSE compliance, Sakshi Malik coordination, and programme iteration. The person who speaks to school principals. Needs health education background.</p></div>
+      <div class="card"><div class="ci">🗺️</div><h4>City Coordinator (per city from Year 2)</h4><p>Manages all expert scheduling, school relationships, launch events, and local expert pool for their city. One coordinator per 20–25 schools is the target ratio.</p></div>
+      <div class="card"><div class="ci">📱</div><h4>Tech Lead</h4><p>Owns the PHC app, Health Report Card system, data privacy compliance, and digital infrastructure. MVP outsource in Year 1; in-house from Year 2.</p></div>
+      <div class="card"><div class="ci">✏️</div><h4>Curriculum Writer / Editor</h4><p>Owns all written content — workbooks, teacher guides, session plans. Ideally from a health education background. Annual update responsibility.</p></div>
+      <div class="card"><div class="ci">💼</div><h4>School Partnerships (Sales)</h4><p>Pitches PHC to school principals and management committees. Ex-education sector background essential. One closer handles 25–30 school accounts.</p></div>
+      <div class="card"><div class="ci">📣</div><h4>Communications / PR</h4><p>Manages PHC social media, Sakshi Malik content coordination, school launch PR, media relationships, and parent communication templates for schools.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 14. BUSINESS MODEL ===== -->
+  <section class="ds" id="bizmodel">
+    <p class="ey">Section 14</p>
+    <h2>Business Model</h2>
+
+    <div class="bflow">
+      <div class="bnode"><div class="bi">🏫</div><h4>School</h4><p>Annual contract. Pays per-student fee.</p></div>
+      <div class="barr">→</div>
+      <div class="bnode" style="border-color:var(--teal);"><div class="bi">🏢</div><h4>PHC</h4><p>Receives school fee. Delivers full programme.</p></div>
+      <div class="barr">→</div>
+      <div class="bnode"><div class="bi">👩‍⚕️</div><h4>Experts</h4><p>Paid per session. Contracted basis.</p></div>
+      <div class="barr">←</div>
+      <div class="bnode"><div class="bi">👨‍👩‍👧</div><h4>Parents</h4><p>Pay school fee. Never pay PHC directly.</p></div>
+    </div>
+
+    <div class="tw"><table>
+      <tr><th>Revenue Stream</th><th>Year 1</th><th>Year 2</th><th>Year 3+</th></tr>
+      <tr><td>School annual programme fee (per student)</td><td>₹4,000–5,000</td><td>₹5,000–6,000</td><td>₹6,000–7,000</td></tr>
+      <tr><td>Student Workbook (per student)</td><td>Included in fee</td><td>Included in fee</td><td>Retail sale option</td></tr>
+      <tr><td>Teacher Training (per school)</td><td>Included</td><td>₹15,000–20,000 per school separately</td><td>Separate SKU</td></tr>
+      <tr><td>PHC App Premium (per family)</td><td>Free (bundled)</td><td>Free (bundled)</td><td>₹499/year optional premium</td></tr>
+      <tr><td>Corporate / Government school contracts</td><td>–</td><td>Explore</td><td>Key revenue driver</td></tr>
+    </table></div>
+  </section>
+
+  <!-- ===== 15. TECHNOLOGY ===== -->
+  <section class="ds" id="tech">
+    <p class="ey">Section 15</p>
+    <h2>Technology Layer — PHC App</h2>
+    <p class="sdesc">What the app needs to do in Year 1 (MVP) vs Year 2+ (full platform).</p>
+
+    <div class="cg cg3">
+      <div class="card"><div class="ci">👧</div><h4>Student View (MVP)</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;">
+          <li>Daily Protein Meter log</li><li>Monthly challenge tracker + badges</li>
+          <li>Health Report Card (read-only)</li><li>Expert webinar recordings</li>
+          <li>Sakshi Malik video content</li><li>Sleep log tracker</li>
+        </ul>
+      </div>
+      <div class="card"><div class="ci">👨‍👩‍👧</div><h4>Parent View (MVP)</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;">
+          <li>Child's Health Report Card</li><li>Challenge progress notifications</li>
+          <li>Expert session calendar</li><li>Monthly webinar access</li>
+          <li>Certificate downloads</li><li>Nutritionist tips feed</li>
+        </ul>
+      </div>
+      <div class="card"><div class="ci">🏫</div><h4>School Admin View (MVP)</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;">
+          <li>Cohort health dashboard (anonymised)</li>
+          <li>Expert booking calendar</li><li>CBSE compliance tracker</li>
+          <li>Health Leader records</li><li>Challenge participation rates</li>
+          <li>Teacher training progress</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="co warn">
+      <span class="co-icon">⚠️</span>
+      <div><h5>Data Privacy is Critical</h5>
+      <p>Health data (especially mental health section) must be stored separately from personal identity data. Only parents and the child's own school counsellor see the mental health section. No admin access without consent. Legal review of data policy mandatory before app launch. DPDP Act (India, 2023) compliance required.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== 16. OPEN ITEMS ===== -->
+  <section class="ds" id="openitems">
+    <p class="ey">Section 16</p>
+    <h2>Open Items — What Must Be Decided / Built Next</h2>
+
+    <div class="cg">
+      <div class="card" style="border-left:4px solid var(--rose);">
+        <div class="ci">🔴</div><h4>Immediate (Before Pilot Launch)</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;margin-top:6px;">
+          <li>Finalise and print Student Workbooks (Basic + Advanced)</li>
+          <li>Complete Teacher Guide writing</li>
+          <li>Record Sakshi Malik video content (6 sessions)</li>
+          <li>Sign first city hospital MOU (Delhi)</li>
+          <li>First expert team contracted (nutritionist + psychologist + yoga)</li>
+          <li>PHC app MVP built or white-labelled</li>
+          <li>Pilot school teacher training completed</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid var(--gold);">
+        <div class="ci">🟡</div><h4>Before Full Scale (Year 2)</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;margin-top:6px;">
+          <li>Bank tie-up signed (HDFC or SBI)</li>
+          <li>CBSE formal recognition application submitted</li>
+          <li>AB-SHWP implementation partner registration</li>
+          <li>Foundation level (Class 1–4) curriculum designed</li>
+          <li>City coordinator hired for Delhi NCR</li>
+          <li>Research partnership with AIIMS / Lady Irwin initiated</li>
+          <li>ISBN registration for workbooks</li>
+          <li>Inter-school PHC sports meet planned</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid var(--sage);">
+        <div class="ci">🟢</div><h4>Year 3 Growth Initiatives</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;margin-top:6px;">
+          <li>Retail sale of workbooks (Amazon / Flipkart)</li>
+          <li>PHC curriculum in Hindi and regional languages</li>
+          <li>PHC for government schools (NHM / RTE pathway)</li>
+          <li>PHC alumni network and community platform</li>
+          <li>National PHC Health Games (annual event)</li>
+          <li>International expansion (South Asia)</li>
+          <li>PHC teacher training as standalone business</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <div class="ci">💡</div><h4>Ideas to Explore Further</h4>
+        <ul style="padding-left:14px;font-size:13px;color:var(--gray);line-height:1.8;margin-top:6px;">
+          <li>PHC Health Olympiad — school-level health knowledge competition</li>
+          <li>Student-produced health content (podcast, video, zine)</li>
+          <li>PHC Parenting App — separate product for parents beyond school</li>
+          <li>Corporate PHC — employee children programme via company tie-ups</li>
+          <li>PHC for home-schooling families</li>
+          <li>Sakshi Malik co-authored children's health book (trade publication)</li>
+          <li>TV/OTT series: PHC animated health show for 6–10 age group</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="co ok" style="margin-top:24px;">
+      <span class="co-icon">📌</span>
+      <div><h5>This Document Is the Source of Truth</h5>
+      <p>Every new decision, confirmed partnership, hired expert, or completed milestone should be updated here. Version this document before and after major milestones. The curriculum, open items, and partnership sections will change fastest — revisit monthly.</p></div>
+    </div>
+  </section>
+
+  <div style="padding:40px 0;text-align:center;color:var(--gray);font-size:13px;border-top:1px solid var(--border);">
+    <p style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:6px;">Progressive Health Club by Sakshi Malik</p>
+    <p>Well Begun. Well Lived. &nbsp;·&nbsp; phcsakshimalik.com &nbsp;·&nbsp; Master Plan v1.0 &nbsp;·&nbsp; July 2026 &nbsp;·&nbsp; Internal — Confidential</p>
+  </div>
+
+</main>
+</body>
+</html>
